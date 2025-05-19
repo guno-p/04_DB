@@ -88,10 +88,26 @@ CREATE VIEW employees_info AS
         titles T ON E.emp_no = T.emp_no
     INNER JOIN
         salaries S ON T.emp_no = S.emp_no
+            AND S.from_date <= T.to_date
+            AND S.to_date >= T.from_date
 WHERE E.emp_no >= 10000;
+-- 기간 조건 설정으로 한 사람에 대한 중복 뷰 발생하지 않도록 조치
 
 SELECT * FROM employees_info
 WHERE s_to = '9999-01-01';
+
+-- 뷰에서 추출 시 같이 뽑고 다시 그룹핑
+SELECT
+    emp_no, birth_date,first_name, last_name, gender, title, t_to, salary
+FROM
+    employees_info main
+WHERE
+    t_to = '9999-01-01' -- 현재 직급 재직 중
+  AND  s_to = '9999-01-01' -- 현재 유효한 급여 정보
+GROUP BY
+    emp_no, birth_date, first_name, last_name, gender, title, t_from, salary
+ORDER BY
+    emp_no;
 
 DROP VIEW IF EXISTS emp_dept_info;
 CREATE VIEW emp_dept_info AS
